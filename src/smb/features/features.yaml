@@ -1,0 +1,67 @@
+# Declarative feature definitions.
+# A data scientist adds a block here; the framework generates point-in-time-correct SQL,
+# backfills it across cutoff dates, and produces a training dataset -- no pipeline code changes.
+#
+# Point-in-time rule: every feature only reads events with event_timestamp <= as_of_date.
+# The label only reads events in (as_of_date, as_of_date + label_horizon_days]. This is what
+# prevents training/serving leakage.
+
+entity: user_pseudo_id
+
+# Backfill the feature store as of each of these cutoffs (walk-forward evaluation).
+backfill_as_of_dates:
+  - "2025-05-08"
+  - "2025-05-22"
+  - "2025-06-05"
+
+# Predict: does the user make a purchase within this many days AFTER the cutoff?
+label:
+  name: purchased_next_21d
+  event: purchase
+  horizon_days: 21
+
+features:
+  - name: sessions_last_7d
+    aggregation: count_distinct
+    column: ga_session_id
+    window_days: 7
+
+  - name: sessions_last_30d
+    aggregation: count_distinct
+    column: ga_session_id
+    window_days: 30
+
+  - name: events_last_7d
+    aggregation: count
+    window_days: 7
+
+  - name: views_last_14d
+    aggregation: count
+    filter: "event_name = 'view_item'"
+    window_days: 14
+
+  - name: add_to_cart_last_14d
+    aggregation: count
+    filter: "event_name = 'add_to_cart'"
+    window_days: 14
+
+  - name: purchases_last_90d
+    aggregation: count
+    filter: "event_name = 'purchase'"
+    window_days: 90
+
+  - name: revenue_last_30d
+    aggregation: sum
+    column: purchase_revenue
+    filter: "event_name = 'purchase'"
+    window_days: 30
+
+  - name: distinct_products_30d
+    aggregation: count_distinct
+    column: item_id
+    filter: "event_name = 'view_item'"
+    window_days: 30
+
+  - name: days_since_last_event
+    aggregation: recency
+    window_days: 90

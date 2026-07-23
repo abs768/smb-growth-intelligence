@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Local warehouse + generated raw data (reproducible via `make all`)
+data/warehouse.duckdb
+data/raw/
+
+# OS
+.DS_Store

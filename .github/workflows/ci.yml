@@ -1,0 +1,36 @@
+name: platform-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  run-platform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run full platform end-to-end
+        run: make all PY=python
+
+      - name: Run tests (pipeline invariants + data-quality gate)
+        run: pytest -q
+
+      - name: Show run metrics
+        run: cat reports/metrics.json
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-reports
+          path: reports/

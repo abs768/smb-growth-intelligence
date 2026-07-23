@@ -1,0 +1,40 @@
+config {
+  type: "table",
+  schema: "smb_growth",
+  description: "Per-campaign spend efficiency: sessions, conversions, CAC, ROAS.",
+  assertions: {
+    nonNull: ["campaign_id"],
+    rowConditions: [
+      "conversion_rate BETWEEN 0 AND 1",
+      "roas >= 0"
+    ]
+  }
+}
+
+WITH sess AS (
+  SELECT
+    campaign_id,
+    COUNT(DISTINCT ga_session_id)                                        AS sessions,
+    COUNT(DISTINCT IF(event_name = 'purchase', ga_session_id, NULL))     AS buyers,
+    SUM(IF(event_name = 'purchase', purchase_revenue, 0))                AS revenue
+  FROM ${ref("stg_events")}
+  GROUP BY campaign_id
+),
+spend AS (
+  -- join synthetic/first-party ad spend here; the public GA4 export has no cost data
+  SELECT campaign_id, SUM(cost) AS spend
+  FROM ${ref("stg_ad_spend")}
+  GROUP BY campaign_id
+)
+SELECT
+  s.campaign_id,
+  sp.spend,
+  s.sessions,
+  s.buyers,
+  s.revenue,
+  ROUND(SAFE_DIVIDE(s.buyers, s.sessions), 4)  AS conversion_rate,
+  ROUND(SAFE_DIVIDE(sp.spend, s.buyers), 2)    AS cac,
+  ROUND(SAFE_DIVIDE(s.revenue, sp.spend), 2)   AS roas
+FROM sess s
+LEFT JOIN spend sp USING (campaign_id)
+ORDER BY s.revenue DESC

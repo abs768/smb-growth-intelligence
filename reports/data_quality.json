@@ -1,0 +1,131 @@
+{
+  "run_ts": "2026-07-23T18:20:30.603667+00:00",
+  "checks_total": 11,
+  "checks_passed": 11,
+  "checks_failed": 0,
+  "critical_failures": 0,
+  "quality_score": 100.0,
+  "results": [
+    {
+      "check_name": "events_volume",
+      "check_type": "row_count_min",
+      "table_name": "stg_events",
+      "column_name": null,
+      "severity": "critical",
+      "status": "pass",
+      "observed": 217131.0,
+      "threshold": 100000.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "events_freshness",
+      "check_type": "freshness",
+      "table_name": "stg_events",
+      "column_name": "event_date",
+      "severity": "critical",
+      "status": "pass",
+      "observed": 0.0,
+      "threshold": 2.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "user_id_not_null",
+      "check_type": "not_null",
+      "table_name": "stg_events",
+      "column_name": "user_pseudo_id",
+      "severity": "critical",
+      "status": "pass",
+      "observed": 0.0,
+      "threshold": 0.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "event_id_unique",
+      "check_type": "unique",
+      "table_name": "stg_events",
+      "column_name": "event_id",
+      "severity": "critical",
+      "status": "pass",
+      "observed": 0.0,
+      "threshold": 0.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "event_name_accepted",
+      "check_type": "accepted_values",
+      "table_name": "stg_events",
+      "column_name": "event_name",
+      "severity": "high",
+      "status": "pass",
+      "observed": 0.0,
+      "threshold": 0.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "revenue_non_negative",
+      "check_type": "min_value",
+      "table_name": "stg_events",
+      "column_name": "purchase_revenue",
+      "severity": "high",
+      "status": "pass",
+      "observed": 12.7,
+      "threshold": 0.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "sessions_reconcile_events",
+      "check_type": "reconcile_count",
+      "table_name": "int_sessions",
+      "column_name": null,
+      "severity": "high",
+      "status": "pass",
+      "observed": 36414.0,
+      "threshold": 36414.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "customer_features_unique",
+      "check_type": "unique",
+      "table_name": "mart_customer_features",
+      "column_name": "user_pseudo_id",
+      "severity": "high",
+      "status": "pass",
+      "observed": 0.0,
+      "threshold": 0.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "conversion_rate_plausible",
+      "check_type": "range_agg",
+      "table_name": "mart_funnel",
+      "column_name": null,
+      "severity": "medium",
+      "status": "pass",
+      "observed": 0.0763,
+      "threshold": 0.2,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "propensity_scores_not_orphaned",
+      "check_type": "relationship",
+      "table_name": "mart_propensity_scores",
+      "column_name": "entity_id",
+      "severity": "medium",
+      "status": "pass",
+      "observed": 0.0,
+      "threshold": 0.0,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    },
+    {
+      "check_name": "quarantine_rate_within_slo",
+      "check_type": "quarantine_rate",
+      "table_name": "stg_events_rejected",
+      "column_name": null,
+      "severity": "medium",
+      "status": "pass",
+      "observed": 0.003126112394008817,
+      "threshold": 0.02,
+      "run_ts": "2026-07-23T18:20:30.603667+00:00"
+    }
+  ]
+}

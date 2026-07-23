@@ -1,0 +1,7 @@
+# Dataform (3.x) project settings for the GCP build.
+# `dataform run` compiles the .sqlx models below into dependency-ordered BigQuery jobs and
+# executes the inline assertions alongside them.
+defaultProject: your-gcp-project     # <- set to your GCP project id
+defaultDataset: smb_growth
+defaultLocation: US
+defaultAssertionDataset: smb_growth_assertions

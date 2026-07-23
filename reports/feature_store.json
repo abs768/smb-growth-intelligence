@@ -1,0 +1,35 @@
+{
+  "entity": "user_pseudo_id",
+  "label": "purchased_next_21d",
+  "n_features": 9,
+  "feature_names": [
+    "sessions_last_7d",
+    "sessions_last_30d",
+    "events_last_7d",
+    "views_last_14d",
+    "add_to_cart_last_14d",
+    "purchases_last_90d",
+    "revenue_last_30d",
+    "distinct_products_30d",
+    "days_since_last_event"
+  ],
+  "cutoffs": [
+    {
+      "as_of": "2025-05-08",
+      "rows": 2211,
+      "positives": 149
+    },
+    {
+      "as_of": "2025-05-22",
+      "rows": 3693,
+      "positives": 274
+    },
+    {
+      "as_of": "2025-06-05",
+      "rows": 5431,
+      "positives": 473
+    }
+  ],
+  "feature_store_rows": 11335,
+  "leakage_check_passed": true
+}

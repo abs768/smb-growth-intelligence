@@ -1,0 +1,95 @@
+{
+  "models_run": 10,
+  "models_succeeded": 10,
+  "pipeline_success_rate": 1.0,
+  "total_wall_seconds": 0.4862,
+  "model_latency_p50_s": 0.0067,
+  "model_latency_p95_s": 0.3815,
+  "raw_events": 219122,
+  "events_processed": 217131,
+  "records_quarantined": 685,
+  "quarantine_rate": 0.00313,
+  "dedup_removed": 1306,
+  "models": [
+    {
+      "model": "stg_ad_spend",
+      "layer": "staging",
+      "rows": 720,
+      "seconds": 0.0048,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "stg_crm_customers",
+      "layer": "staging",
+      "rows": 4986,
+      "seconds": 0.0018,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "stg_events",
+      "layer": "staging",
+      "rows": 217131,
+      "seconds": 0.3815,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "stg_events_rejected",
+      "layer": "staging",
+      "rows": 685,
+      "seconds": 0.0112,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "int_sessions",
+      "layer": "intermediate",
+      "rows": 36414,
+      "seconds": 0.0534,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "mart_campaign_efficiency",
+      "layer": "marts",
+      "rows": 8,
+      "seconds": 0.0064,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "mart_cohort_retention",
+      "layer": "marts",
+      "rows": 91,
+      "seconds": 0.0054,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "mart_customer_features",
+      "layer": "marts",
+      "rows": 9000,
+      "seconds": 0.0128,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "mart_funnel",
+      "layer": "marts",
+      "rows": 7,
+      "seconds": 0.0022,
+      "status": "success",
+      "error": null
+    },
+    {
+      "model": "mart_product_affinity",
+      "layer": "marts",
+      "rows": 40,
+      "seconds": 0.0067,
+      "status": "success",
+      "error": null
+    }
+  ]
+}

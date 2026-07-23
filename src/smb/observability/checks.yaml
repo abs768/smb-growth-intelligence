@@ -1,0 +1,82 @@
+# Declarative data-quality checks. Each runs against the warehouse after the pipeline,
+# writes its result to the dq_audit_results audit table, and rolls up into a quality score.
+# Mirrors what Dataform assertions do in the GCP build (see /bigquery/dataform).
+
+reference_date: "2025-06-30"   # stand-in for CURRENT_DATE in the real pipeline
+
+checks:
+  - name: events_volume
+    type: row_count_min
+    table: stg_events
+    min: 100000
+    severity: critical
+
+  - name: events_freshness
+    type: freshness
+    table: stg_events
+    column: event_date
+    max_days: 2
+    severity: critical
+
+  - name: user_id_not_null
+    type: not_null
+    table: stg_events
+    column: user_pseudo_id
+    max_null_rate: 0.0
+    severity: critical
+
+  - name: event_id_unique
+    type: unique
+    table: stg_events
+    column: event_id
+    severity: critical
+
+  - name: event_name_accepted
+    type: accepted_values
+    table: stg_events
+    column: event_name
+    values: [session_start, page_view, view_item, add_to_cart, begin_checkout, purchase]
+    severity: high
+
+  - name: revenue_non_negative
+    type: min_value
+    table: stg_events
+    column: purchase_revenue
+    min: 0
+    severity: high
+
+  - name: sessions_reconcile_events
+    type: reconcile_count
+    table: int_sessions
+    source_table: stg_events
+    source_expr: "count(DISTINCT ga_session_id)"
+    severity: high
+
+  - name: customer_features_unique
+    type: unique
+    table: mart_customer_features
+    column: user_pseudo_id
+    severity: high
+
+  - name: conversion_rate_plausible
+    type: range_agg
+    table: mart_funnel
+    expr: "max(overall_conversion_rate)"
+    min: 0.01
+    max: 0.20
+    severity: medium
+
+  - name: propensity_scores_not_orphaned
+    type: relationship
+    table: mart_propensity_scores
+    column: entity_id
+    to_table: mart_customer_features
+    to_column: user_pseudo_id
+    severity: medium
+
+  - name: quarantine_rate_within_slo
+    type: quarantine_rate
+    rejected_table: stg_events_rejected
+    raw_glob: "data/raw/events/events.parquet"
+    max_rate: 0.02
+    severity: medium

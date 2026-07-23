@@ -1,0 +1,53 @@
+config {
+  type: "table",
+  schema: "smb_growth",
+  description: "Cleaned, deduplicated GA4 event stream flattened from the public sample dataset.",
+  bigquery: {
+    partitionBy: "event_date",
+    clusterBy: ["event_name"]
+  },
+  // These assertions run alongside the model update and fail the workflow (surfacing the
+  // offending rows) if violated -- the GCP equivalent of src/smb/observability/checks.yaml.
+  assertions: {
+    uniqueKey: ["event_id"],
+    nonNull: ["event_id", "event_timestamp", "user_pseudo_id", "event_name"],
+    rowConditions: [
+      "event_name IN ('session_start','page_view','view_item','add_to_cart','begin_checkout','purchase')",
+      "purchase_revenue IS NULL OR purchase_revenue >= 0"
+    ]
+  }
+}
+
+WITH flattened AS (
+  SELECT
+    TO_HEX(MD5(CONCAT(
+      user_pseudo_id, CAST(event_timestamp AS STRING), event_name,
+      COALESCE((SELECT CAST(value.int_value AS STRING) FROM UNNEST(event_params)
+                WHERE key = 'ga_session_id'), '')
+    ))) AS event_id,
+    TIMESTAMP_MICROS(event_timestamp)                                    AS event_timestamp,
+    PARSE_DATE('%Y%m%d', event_date)                                     AS event_date,
+    event_name,
+    user_pseudo_id,
+    user_id                                                              AS customer_id,
+    (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id') AS ga_session_id,
+    device.category                                                      AS device_category,
+    geo.country                                                          AS country,
+    traffic_source.name                                                  AS campaign_id,
+    traffic_source.source                                                AS traffic_source,
+    traffic_source.medium                                                AS traffic_medium,
+    (SELECT i.item_id FROM UNNEST(items) i LIMIT 1)                      AS item_id,
+    ecommerce.purchase_revenue_in_usd                                    AS purchase_revenue
+  FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  WHERE _TABLE_SUFFIX BETWEEN '20210101' AND '20210131'
+),
+valid AS (
+  SELECT * FROM flattened
+  WHERE user_pseudo_id IS NOT NULL
+    AND NOT (event_name = 'purchase' AND (purchase_revenue IS NULL OR purchase_revenue <= 0))
+),
+deduped AS (
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY event_timestamp) AS rn
+  FROM valid
+)
+SELECT * EXCEPT (rn) FROM deduped WHERE rn = 1

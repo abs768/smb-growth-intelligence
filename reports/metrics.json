@@ -1,0 +1,38 @@
+{
+  "pipeline": {
+    "events_processed": 217131,
+    "raw_events": 219122,
+    "models_run": 10,
+    "pipeline_success_rate": 1.0,
+    "model_latency_p50_s": 0.0067,
+    "model_latency_p95_s": 0.3815,
+    "records_quarantined": 685,
+    "quarantine_rate": 0.00313
+  },
+  "features": {
+    "n_features": 9,
+    "feature_store_rows": 11335,
+    "backfill_cutoffs": 3,
+    "leakage_check_passed": true
+  },
+  "model": {
+    "roc_auc": 0.6467,
+    "baseline_roc_auc": 0.6022,
+    "roc_auc_improvement_vs_baseline": 0.0445,
+    "top_decile_lift": 2.178
+  },
+  "quality": {
+    "assertions": 11,
+    "assertions_passed": 11,
+    "quality_score": 100.0,
+    "critical_failures": 0
+  },
+  "phase_timings_s": {
+    "generate": 3.367,
+    "pipeline": 0.552,
+    "features": 0.048,
+    "train": 0.036,
+    "quality": 0.029
+  },
+  "total_pipeline_seconds": 4.03
+}
