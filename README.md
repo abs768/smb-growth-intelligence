@@ -1,5 +1,9 @@
 # SMB Growth Intelligence Platform
 
+[![platform-ci](https://github.com/abs768/smb-growth-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/abs768/smb-growth-intelligence/actions/workflows/ci.yml)
+[![python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 An end-to-end analytics-engineering platform that turns raw GA4 ecommerce events into tested,
 decision-facing customer and campaign tables — and automates a purchase-propensity model on top.
 
