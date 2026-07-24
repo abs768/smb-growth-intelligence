@@ -54,7 +54,9 @@ def diverging_rows(importance):
     for name, val in sorted(importance.items(), key=lambda kv: -abs(kv[1])):
         pct = abs(val) / vmax * 50          # half-width per arm
         pos = val >= 0
-        side = "right" if pos else "left"
+        # Anchor the bar's *baseline* edge to the zero axis and let it grow
+        # outward: a positive bar is pinned by its left edge and extends right.
+        side = "left" if pos else "right"
         arrow = "▲" if pos else "▼"
         direction = "increases" if pos else "decreases"
         tip = f"{name}: {val:+.4f} — {direction} predicted propensity"
