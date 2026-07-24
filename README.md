@@ -1,5 +1,7 @@
 # SMB Growth Intelligence Platform
 
+**▶ [Live dashboard](https://abs768.github.io/smb-growth-intelligence/)** — rebuilt by running the pipeline end-to-end on a clean runner, so the numbers there are a real execution, not a committed snapshot.
+
 [![platform-ci](https://github.com/abs768/smb-growth-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/abs768/smb-growth-intelligence/actions/workflows/ci.yml)
 [![python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
