@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMB Growth Intelligence — live pipeline run</title>
+<meta name="description" content="GA4 events through layered ETL, a point-in-time feature store, a purchase-propensity model and a data-quality engine. Every number on this page is written by the pipeline itself on each run.">
+<meta name="author" content="abs768">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SMB Growth Intelligence — live pipeline run">
+<meta property="og:description" content="217,131 events through 10 models in 4.03s, with a point-in-time feature store, a propensity model and 11 data-quality assertions.">
+<style>
+
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --fg: #14161a;
+    --muted: #5b6470;
+    --card: #f6f7f9;
+    --border: rgba(20,22,26,.10);
+    --accent: #0a58ca;
+    --accent2: #12b981;
+    --hero1: #0b1020;
+    --hero2: #16203a;
+    --maxw: 1080px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0d12; --fg: #e8eaee; --muted: #99a1ad; --card: #14171e;
+      --border: rgba(255,255,255,.09); --accent: #6ca8ff; --accent2: #34d39e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+
+  /* nav */
+  nav.top {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: saturate(180%) blur(12px);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  nav.top .wrap { display: flex; align-items: center; gap: 20px; height: 58px; }
+  nav.top .brand { font-weight: 700; letter-spacing: -.02em; margin-right: auto; }
+  nav.top .brand span { color: var(--accent2); }
+  nav.top a { color: var(--muted); text-decoration: none; font-size: .95rem; }
+  nav.top a:hover { color: var(--fg); }
+  nav.top .cta { color: var(--fg); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 8px; }
+  nav.top .links { display: flex; gap: 20px; align-items: center; }
+  @media (max-width: 720px) { nav.top .links .hideable { display: none; } }
+
+  /* hero */
+  header.hero {
+    background: radial-gradient(1200px 500px at 70% -10%, rgba(52,211,158,.16), transparent 60%),
+                linear-gradient(160deg, var(--hero1), var(--hero2));
+    color: #eef2f8; border-bottom: 1px solid var(--border);
+    padding: 72px 0 64px;
+  }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 44px; align-items: center; }
+  @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; gap: 30px; } }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .badge { font-size: .78rem; padding: 4px 10px; border-radius: 999px;
+    background: rgba(255,255,255,.09); color: #cdd6e4; border: 1px solid rgba(255,255,255,.12); }
+  h1 { font-size: clamp(2rem, 4.4vw, 3rem); line-height: 1.08; letter-spacing: -.03em;
+    margin: 0 0 .5em; color: #fff; }
+  .hero p.lead { font-size: 1.12rem; color: #c3ccd9; margin: 0 0 1.6em; max-width: 34em; }
+  .hero .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    padding: 11px 20px; border-radius: 10px; font-weight: 600; font-size: .96rem; }
+  .btn.primary { background: var(--accent2); color: #04150e; }
+  .btn.ghost { background: rgba(255,255,255,.06); color: #eef2f8; border: 1px solid rgba(255,255,255,.16); }
+  .btn:hover { transform: translateY(-1px); }
+  .hero figure { margin: 0; }
+  .hero figure img { width: 100%; border-radius: 14px; display: block;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.1); }
+  .hero figcaption { color: #9aa6ba; font-size: .82rem; text-align: center; margin-top: .8em; }
+
+  /* sections */
+  section { padding: 64px 0; border-bottom: 1px solid var(--border); }
+  .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .74rem;
+    font-weight: 700; color: var(--accent2); margin: 0 0 .5em; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.02em; margin: 0 0 .4em; }
+  section > .wrap > p.sub { color: var(--muted); max-width: 44em; margin: 0 0 2em; }
+
+  /* claim cards */
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+  /* `color` is set explicitly so a card keeps its own contrast when nested
+     inside the dark hero, which sets a near-white colour on its subtree. */
+  .card { background: var(--card); color: var(--fg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 22px 20px; }
+  .card .k { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; color: var(--accent2); }
+  .card h3 { margin: .3em 0 .3em; font-size: 1.06rem; }
+  .card p { margin: 0; color: var(--muted); font-size: .93rem; }
+
+  /* comparison */
+  .two { display: grid; grid-template-columns: 1.15fr .85fr; gap: 34px; align-items: center; }
+  @media (max-width: 820px) { .two { grid-template-columns: 1fr; } }
+  .two img { width: 100%; border-radius: 12px; border: 1px solid var(--border); display: block; background:#fff; }
+  table { width: 100%; border-collapse: collapse; font-size: .93rem; margin: 0 0 1.2em; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; }
+  td.c, th.c { text-align: center; }
+  .tag-good { color: var(--accent2); font-weight: 700; }
+  .tag-bad { color: #e0803a; font-weight: 700; }
+  .finding { background: var(--card); border-left: 3px solid var(--accent2);
+    padding: 14px 18px; border-radius: 0 10px 10px 0; color: var(--fg); font-size: .95rem; }
+
+  /* demo grid */
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 820px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .gallery { grid-template-columns: 1fr; } }
+  .shot { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .shot img { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; background:#0b0d12; }
+  .shot .cap { padding: 10px 12px; font-size: .84rem; color: var(--muted); }
+  .shot .cap b { color: var(--fg); font-weight: 600; }
+
+  /* pipeline */
+  .pipe { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+  .stage { flex: 1 1 160px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; }
+  .stage .n { font-size: .72rem; color: var(--accent2); font-weight: 700; letter-spacing:.08em; }
+  .stage b { display: block; margin: 4px 0 3px; font-size: .98rem; }
+  .stage span { color: var(--muted); font-size: .85rem; }
+  .arrow { align-self: center; color: var(--muted); font-size: 1.2rem; }
+  @media (max-width: 720px) { .arrow { display: none; } }
+
+  /* honesty */
+  .honest { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 26px; }
+  .honest ul { margin: 0; padding-left: 1.2em; }
+  .honest li { margin: .55em 0; color: var(--fg); }
+  .honest li b { color: var(--fg); }
+
+  /* stack + footer */
+  .stack { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 12px; font-size: .88rem; color: var(--fg); }
+  footer { padding: 40px 0 64px; color: var(--muted); font-size: .92rem; }
+  footer a { color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+
+  /* ---------------------------------------------------------------
+     Data-viz layer.
+
+     Colours are the validated reference palette, assigned by the job
+     each mark does rather than by series index:
+       --seq-*   sequential, one hue  -> magnitude (model latency)
+       --dv-*    diverging, two poles -> signed values (feature weights)
+       --st-*    fixed status palette -> pass/fail state
+     Validated against these surfaces in both modes; the diverging pair
+     clears every gate (worst adjacent CVD dE 21.6 light / 19.2 dark).
+     Status colours never appear without a glyph and a text label.
+     --------------------------------------------------------------- */
+  :root {
+    --seq:    #2a78d6;
+    --dv-pos: #2a78d6;
+    --dv-neg: #e34948;
+    --dv-mid: #f0efec;
+    --st-good: #0ca30c;
+    --st-crit: #d03b3b;
+    --track:  rgba(11,11,11,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --seq:    #3987e5;
+      --dv-pos: #3987e5;
+      --dv-neg: #e66767;
+      --dv-mid: #383835;
+      --track:  rgba(255,255,255,.06);
+    }
+  }
+
+  section.sec { padding: 40px 22px 8px; }
+  h2 { font-size: 1.5rem; letter-spacing: -.02em; margin: 0 0 .4em; }
+  h3.sub { font-size: 1.1rem; margin: 2em 0 .3em; }
+  .blurb { color: var(--muted); max-width: 62em; margin: 0 0 1.2em; }
+  td.num, th.num { font-variant-numeric: tabular-nums; }
+  td.fname { font-weight: 600; }
+  tbody tr:hover { background: var(--track); }
+  .chip.sm { padding: 2px 8px; font-size: .78rem; }
+  .freshness { display: block; margin-top: 8px; color: var(--muted); font-size: .86rem; }
+
+  /* magnitude bar, sized inside its own cell; the figure sits in the
+     next column, so the bar is comparison only and needs no label */
+  td.barcell { width: 26%; }
+  .barwrap { display: block; background: var(--track); border-radius: 3px; height: 10px; }
+  .bar.seq { display: block; height: 100%; background: var(--seq);
+    border-radius: 0 4px 4px 0; }
+
+  /* diverging bars: sign is carried by side of the axis AND by hue */
+  .dvtable td.dv { width: 46%; }
+  .dv-track { position: relative; display: block; height: 12px;
+    background: var(--track); border-radius: 3px; }
+  .dv-zero { position: absolute; left: 50%; top: -2px; bottom: -2px;
+    width: 2px; background: var(--dv-mid); transform: translateX(-1px); }
+  .dv-bar { position: absolute; top: 0; height: 100%; }
+  .dv-bar.pos { background: var(--dv-pos); border-radius: 0 4px 4px 0;
+    margin-left: 2px; }
+  .dv-bar.neg { background: var(--dv-neg); border-radius: 4px 0 0 4px;
+    margin-right: 2px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 0 0 12px;
+    color: var(--muted); font-size: .88rem; }
+  .legend i.sw { display: inline-block; width: 12px; height: 12px;
+    border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .legend i.sw.pos { background: var(--dv-pos); }
+  .legend i.sw.neg { background: var(--dv-neg); }
+
+  /* status: colour is never the only channel — always glyph + word */
+  .st-good { color: var(--st-good); font-weight: 600; white-space: nowrap; }
+  .st-crit { color: var(--st-crit); font-weight: 600; white-space: nowrap; }
+  .sev { font-size: .78rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .04em; }
+  .sev-critical { color: var(--st-crit); font-weight: 700; }
+
+  @media (max-width: 720px) {
+    section.sec { overflow-x: auto; }
+    table { min-width: 560px; }
+  }
+
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <div class="brand">smb-growth<span>-intelligence</span></div>
+    <div class="links">
+      <a class="hideable" href="#pipeline">Pipeline</a>
+      <a class="hideable" href="#features">Features</a>
+      <a class="hideable" href="#model">Model</a>
+      <a class="hideable" href="#quality">Quality</a>
+      <a class="cta" href="https://github.com/abs768/smb-growth-intelligence">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="badges">
+        <span class="badge">DuckDB → BigQuery-portable</span>
+        <span class="badge">Point-in-time features</span>
+        <span class="badge">Leakage-checked</span>
+      </div>
+      <h1>217,131 events to scored customers in 4.03s.</h1>
+      <p class="lead">
+        A GA4-shaped event stream through layered ETL, a point-in-time feature
+        store, a purchase-propensity model and a data-quality engine. Every figure
+        on this page was written by the pipeline itself — this page is rebuilt by
+        running it, not by editing it.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="#pipeline">See the run ↓</a>
+        <a class="btn ghost" href="https://github.com/abs768/smb-growth-intelligence">Read the code</a>
+      </div>
+    </div>
+    <div>
+      <div class="cards">
+        <div class="card"><div class="k">100%</div><h3>Pipeline success</h3>
+          <p>10/10 models, p95 latency 382 ms.</p></div>
+        <div class="card"><div class="k">685</div><h3>Records quarantined</h3>
+          <p>0.31% caught at ingestion, not silently loaded.</p></div>
+        <div class="card"><div class="k">0.647</div><h3>Propensity ROC-AUC</h3>
+          <p>vs 0.602 baseline — +0.044 improvement.</p></div>
+        <div class="card"><div class="k">100/100</div><h3>Data-quality score</h3>
+          <p>11/11 assertions, 0 critical failures.</p></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="wrap" style="padding:44px 22px 0">
+  <div class="finding">
+    <b>This page is generated, not written.</b> The workflow runs
+    <code>make all</code> on a clean runner, then renders whatever
+    <code>reports/*.json</code> the pipeline produced. If the pipeline breaks or a
+    quality assertion fails, that shows up here.
+    <span class="freshness">Last run 2026-07-24 18:59 UTC
+    </span>
+  </div>
+</section>
+
+<section class="wrap sec" id="pipeline">
+  <h2>Pipeline run</h2>
+  <p class="blurb">
+    Ten SQL models across three layers — staging, intermediate, marts — executed in
+    dependency order. Bars show relative execution time; the figure is in the next
+    column.
+  </p>
+  <table>
+    <thead><tr><th>Model</th><th>Layer</th><th class="c">Rows</th>
+      <th style="width:26%">Time</th><th class="c">Seconds</th><th class="c">Status</th></tr></thead>
+    <tbody>
+<tr><td class="fname">stg_ad_spend</td><td><span class="chip sm">staging</span></td><td class="c num">720</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0048 seconds"><span class="bar seq" style="width:1.5%"></span></span></td><td class="c num">0.0048s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">stg_crm_customers</td><td><span class="chip sm">staging</span></td><td class="c num">4,986</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0018 seconds"><span class="bar seq" style="width:1.5%"></span></span></td><td class="c num">0.0018s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">stg_events</td><td><span class="chip sm">staging</span></td><td class="c num">217,131</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.3815 seconds"><span class="bar seq" style="width:100.0%"></span></span></td><td class="c num">0.3815s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">stg_events_rejected</td><td><span class="chip sm">staging</span></td><td class="c num">685</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0112 seconds"><span class="bar seq" style="width:2.9%"></span></span></td><td class="c num">0.0112s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">int_sessions</td><td><span class="chip sm">intermediate</span></td><td class="c num">36,414</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0534 seconds"><span class="bar seq" style="width:14.0%"></span></span></td><td class="c num">0.0534s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">mart_campaign_efficiency</td><td><span class="chip sm">marts</span></td><td class="c num">8</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0064 seconds"><span class="bar seq" style="width:1.7%"></span></span></td><td class="c num">0.0064s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">mart_cohort_retention</td><td><span class="chip sm">marts</span></td><td class="c num">91</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0054 seconds"><span class="bar seq" style="width:1.5%"></span></span></td><td class="c num">0.0054s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">mart_customer_features</td><td><span class="chip sm">marts</span></td><td class="c num">9,000</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0128 seconds"><span class="bar seq" style="width:3.4%"></span></span></td><td class="c num">0.0128s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">mart_funnel</td><td><span class="chip sm">marts</span></td><td class="c num">7</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0022 seconds"><span class="bar seq" style="width:1.5%"></span></span></td><td class="c num">0.0022s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+<tr><td class="fname">mart_product_affinity</td><td><span class="chip sm">marts</span></td><td class="c num">40</td><td class="barcell"><span class="barwrap" role="img" aria-label="0.0067 seconds"><span class="bar seq" style="width:1.8%"></span></span></td><td class="c num">0.0067s</td><td class="c"><span class="st-good">✓ success</span></td></tr>
+    </tbody>
+  </table>
+  <p class="blurb">
+    219,122 raw events in, 217,131 loaded,
+    1,306 duplicates removed and 685
+    quarantined — the difference is accounted for, not dropped.
+  </p>
+</section>
+
+<section class="wrap sec" id="features">
+  <h2>Point-in-time feature store</h2>
+  <p class="blurb">
+    9 features computed as of each cutoff date, so a training row
+    only ever sees data that existed at that moment. The label is
+    <code>purchased_next_21d</code>.
+    <span class="st-good">
+      ✓ leakage check
+      passed</span>
+  </p>
+  <table>
+    <thead><tr><th>As-of cutoff</th><th class="c">Rows</th>
+      <th class="c">Positives</th><th class="c">Base rate</th></tr></thead>
+    <tbody>
+<tr><td class="fname">2025-05-08</td><td class="c num">2,211</td><td class="c num">149</td><td class="c num">6.74%</td></tr>
+<tr><td class="fname">2025-05-22</td><td class="c num">3,693</td><td class="c num">274</td><td class="c num">7.42%</td></tr>
+<tr><td class="fname">2025-06-05</td><td class="c num">5,431</td><td class="c num">473</td><td class="c num">8.71%</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="wrap sec" id="model">
+  <h2>Purchase-propensity model</h2>
+  <p class="blurb">
+    Trained on cutoffs 2025-05-08, 2025-05-22 and validated on
+    2025-06-05 — 5,904 training rows, 5,431
+    validation rows at a 8.71% base rate. The baseline is
+    the obvious heuristic: rank by recent add-to-cart activity.
+  </p>
+  <table style="max-width:46em">
+    <thead><tr><th>Metric</th><th class="c">Model</th><th class="c">Baseline</th><th class="c">Δ</th></tr></thead>
+    <tbody>
+      <tr><td class="fname">ROC-AUC</td><td class="c num">0.6467</td>
+        <td class="c num">0.6022</td>
+        <td class="c num"><span class="tag-good">+0.0445</span></td></tr>
+      <tr><td class="fname">PR-AUC</td><td class="c num">0.1531</td>
+        <td class="c num">0.1236</td>
+        <td class="c num"><span class="tag-good">+0.0295</span></td></tr>
+      <tr><td class="fname">Top-decile lift</td><td class="c num">2.178×</td>
+        <td class="c num">2.199×</td>
+        <td class="c num"><span class="tag-bad">-0.021</span></td></tr>
+    </tbody>
+  </table>
+  <div class="finding" style="margin:18px 0 26px">
+    <b>Read this honestly:</b> the model wins on ranking quality overall (ROC-AUC,
+    PR-AUC) but <em>not</em> on top-decile lift, where the simple add-to-cart
+    heuristic is marginally better. If the campaign only ever targets the top 10%,
+    the baseline is the cheaper choice.
+  </div>
+
+  <h3 class="sub">Feature weights</h3>
+  <p class="blurb">
+    Signed model coefficients. Direction is shown by which side of the axis the bar
+    falls as well as by colour, and every bar carries its value.
+  </p>
+  <div class="legend">
+    <span><i class="sw pos"></i> ▲ increases propensity</span>
+    <span><i class="sw neg"></i> ▼ decreases propensity</span>
+  </div>
+  <table class="dvtable">
+    <thead><tr><th>Feature</th><th class="c">Weight</th><th class="c">Value</th></tr></thead>
+    <tbody>
+<tr title="purchases_last_90d: +0.1986 — increases predicted propensity"><td class="fname">purchases_last_90d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar pos" style="right:50%;width:50.00%"></span></span></td><td class="c num"><span class="tag-good">▲ +0.1986</span></td></tr>
+<tr title="add_to_cart_last_14d: +0.1218 — increases predicted propensity"><td class="fname">add_to_cart_last_14d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar pos" style="right:50%;width:30.66%"></span></span></td><td class="c num"><span class="tag-good">▲ +0.1218</span></td></tr>
+<tr title="distinct_products_30d: +0.0806 — increases predicted propensity"><td class="fname">distinct_products_30d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar pos" style="right:50%;width:20.29%"></span></span></td><td class="c num"><span class="tag-good">▲ +0.0806</span></td></tr>
+<tr title="views_last_14d: -0.0594 — decreases predicted propensity"><td class="fname">views_last_14d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar neg" style="left:50%;width:14.95%"></span></span></td><td class="c num"><span class="tag-bad">▼ -0.0594</span></td></tr>
+<tr title="sessions_last_30d: +0.0536 — increases predicted propensity"><td class="fname">sessions_last_30d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar pos" style="right:50%;width:13.49%"></span></span></td><td class="c num"><span class="tag-good">▲ +0.0536</span></td></tr>
+<tr title="days_since_last_event: -0.0463 — decreases predicted propensity"><td class="fname">days_since_last_event</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar neg" style="left:50%;width:11.66%"></span></span></td><td class="c num"><span class="tag-bad">▼ -0.0463</span></td></tr>
+<tr title="events_last_7d: +0.0332 — increases predicted propensity"><td class="fname">events_last_7d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar pos" style="right:50%;width:8.36%"></span></span></td><td class="c num"><span class="tag-good">▲ +0.0332</span></td></tr>
+<tr title="sessions_last_7d: +0.0287 — increases predicted propensity"><td class="fname">sessions_last_7d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar pos" style="right:50%;width:7.23%"></span></span></td><td class="c num"><span class="tag-good">▲ +0.0287</span></td></tr>
+<tr title="revenue_last_30d: +0.0169 — increases predicted propensity"><td class="fname">revenue_last_30d</td><td class="dv"><span class="dv-track"><span class="dv-zero"></span><span class="dv-bar pos" style="right:50%;width:4.25%"></span></span></td><td class="c num"><span class="tag-good">▲ +0.0169</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="wrap sec" id="quality">
+  <h2>Data-quality assertions</h2>
+  <p class="blurb">
+    11 YAML-declared assertions run against the warehouse after
+    every pipeline execution, written to an audit table and scored. Critical
+    failures fail the build.
+  </p>
+  <table>
+    <thead><tr><th>Check</th><th>Type</th><th class="c">Severity</th>
+      <th class="c">Observed</th><th class="c">Threshold</th><th class="c">Status</th></tr></thead>
+    <tbody>
+<tr><td class="fname">events_volume</td><td><span class="chip sm">row_count_min</span></td><td class="c"><span class="sev sev-critical">critical</span></td><td class="c num">2.171e+05</td><td class="c num">1e+05</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">events_freshness</td><td><span class="chip sm">freshness</span></td><td class="c"><span class="sev sev-critical">critical</span></td><td class="c num">0</td><td class="c num">2</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">user_id_not_null</td><td><span class="chip sm">not_null</span></td><td class="c"><span class="sev sev-critical">critical</span></td><td class="c num">0</td><td class="c num">0</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">event_id_unique</td><td><span class="chip sm">unique</span></td><td class="c"><span class="sev sev-critical">critical</span></td><td class="c num">0</td><td class="c num">0</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">event_name_accepted</td><td><span class="chip sm">accepted_values</span></td><td class="c"><span class="sev sev-high">high</span></td><td class="c num">0</td><td class="c num">0</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">revenue_non_negative</td><td><span class="chip sm">min_value</span></td><td class="c"><span class="sev sev-high">high</span></td><td class="c num">12.7</td><td class="c num">0</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">sessions_reconcile_events</td><td><span class="chip sm">reconcile_count</span></td><td class="c"><span class="sev sev-high">high</span></td><td class="c num">3.641e+04</td><td class="c num">3.641e+04</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">customer_features_unique</td><td><span class="chip sm">unique</span></td><td class="c"><span class="sev sev-high">high</span></td><td class="c num">0</td><td class="c num">0</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">conversion_rate_plausible</td><td><span class="chip sm">range_agg</span></td><td class="c"><span class="sev sev-medium">medium</span></td><td class="c num">0.0763</td><td class="c num">0.2</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">propensity_scores_not_orphaned</td><td><span class="chip sm">relationship</span></td><td class="c"><span class="sev sev-medium">medium</span></td><td class="c num">0</td><td class="c num">0</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+<tr><td class="fname">quarantine_rate_within_slo</td><td><span class="chip sm">quarantine_rate</span></td><td class="c"><span class="sev sev-medium">medium</span></td><td class="c num">0.003126</td><td class="c num">0.02</td><td class="c"><span class="st-good">✓ pass</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="wrap sec">
+  <h2>How it is put together</h2>
+  <div class="pipe">
+    <div class="stage"><div class="n">01</div><b>Ingest</b>
+      <span>GA4-shaped events, CRM and ad spend; bad records quarantined at the boundary.</span></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="n">02</div><b>Model</b>
+      <span>Layered SQL: staging → intermediate → marts, run in dependency order.</span></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="n">03</div><b>Features</b>
+      <span>Config-driven point-in-time store, backfilled per cutoff.</span></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="n">04</div><b>Train</b>
+      <span>Walk-forward fit, scored back into the warehouse as a mart.</span></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="n">05</div><b>Assert</b>
+      <span>Quality checks to an audit table; critical failures break the build.</span></div>
+  </div>
+  <p class="blurb" style="margin-top:22px">
+    It runs locally on DuckDB with no cloud account and no cost, and the same
+    modelling logic ports to BigQuery and Dataform — see
+    <a href="https://github.com/abs768/smb-growth-intelligence/tree/main/bigquery">/bigquery</a>.
+  </p>
+  <div class="stack" style="margin-top:14px">
+    <span class="chip"><code>make setup</code></span>
+    <span class="chip"><code>make all</code></span>
+    <span class="chip"><code>pytest -q</code></span>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Built by <a href="https://github.com/abs768">abs768</a> · generated from <code>reports/*.json</code> on every run</div>
+    <div><a href="https://github.com/abs768/smb-growth-intelligence">Source</a> · <a href="https://abs768.github.io/">Portfolio</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
